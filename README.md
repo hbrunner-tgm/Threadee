@@ -1,4 +1,4 @@
 Threadee
 ========
 
-Das Repository zur SEW Aufgabe nebenläufige Roboterfabrik
+Das Repository zur SEW Aufgabe nebenläufige Roboterfabrik.
