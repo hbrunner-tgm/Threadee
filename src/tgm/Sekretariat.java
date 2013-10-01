@@ -1,30 +1,32 @@
 package tgm;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
 /**
- * Eine Klasse die alle eingabe Parmeter uebernimmt und die einzelen Threads startet.
- * @author helmuthbrunner
+ * Hauptklasse, welche alle Arbeiter initialisiert und startet
+ *
+ * @author Andreas Willinger
+ * @version 0.1
  */
 
-public class Sekretariat {
+public class Sekretariat
+{
+    private HashMap<Object, Integer> monteurID;
 
-	private String pfadLager, pfadLog;
-	private int anzahlMon, anzahlLief;
-	private long zeit;
-	private int id;
-
-	/**
-	 * Default-Konstruktor fuesr die Klasse Sekretariat.
-	 */
-	public Sekretariat() {
-		this.pfadLager= pfadLager;
-		this.pfadLog= pfadLog;
-		this.anzahlMon= 25;
-		this.anzahlLief=12;
-		this.zeit=25l;
-	}
+    // Threads & Thread-Pools
+    private Lagermitarbeiter lagermitarbeiter;
+    private ThreadPoolExecutor executerMonteur, executerLieferant, executerWatchdog;
+    private int anzahlMon, anzahlLief;
+    private long zeit;
+    private int mid;
 
 	/**
-	 * Ein Konstruktor der Klasse Sekretariat der alle Parameter uebernimmt.
+	 * Alle benötigten Variablen dem Sekretariat zuordnen und Pools initialisieren
+     *
 	 * @param pfadLager der Pfad zum Lagerfile
 	 * @param pfadLog der Pfad zum Logfile
 	 * @param anzahlMon die Anzahl der Montuere
@@ -32,120 +34,51 @@ public class Sekretariat {
 	 * @param zeit wie lange das Programm laufen soll
 	 */
 	public Sekretariat(String pfadLager, String pfadLog, int anzahlMon, int anzahlLief, long zeit) {
-		this.setPfadLager(pfadLager);
-		this.setPfadLog(pfadLog);
-		this.setAnzahlMon(anzahlMon);
-		this.setAnzahlLief(anzahlLief);
-		this.setZeit(zeit);
+        this.lagermitarbeiter = new Lagermitarbeiter(pfadLager);
+        this.monteurID = new HashMap<Object, Integer>();
+
+        this.executerLieferant = new ThreadPoolExecutor(anzahlLief, anzahlLief, zeit, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(anzahlLief));
+        this.executerMonteur = new ThreadPoolExecutor(anzahlMon, anzahlMon, zeit, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(anzahlMon));
+        this.executerWatchdog = new ThreadPoolExecutor(anzahlLief+anzahlMon, anzahlLief+anzahlMon+1, zeit, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(anzahlLief+anzahlMon));
+
+        this.anzahlLief = anzahlLief;
+        this.anzahlMon = anzahlMon;
+        this.zeit = zeit;
 	}
 
-	/**
-	 * Erstell eine neue Mitarbeiter ID
-	 */
-	public void newID() {
-		id++;
-	}
-	
-	/**
-	 * Gibt die ID zurueck.
-	 */
-	public int getID() {
-		return id;
-	}
-	
-	public void startWorking() {
-		/*
-		 * Alle Threads erzeugen und Starten.
-		 */
-	}
+    /**
+     * Alle Pools starten
+     */
+    public void startWork()
+    {
+        ArrayList<Runnable> watchdogs = new ArrayList<Runnable>();
+        watchdogs.add(new WatchDog(this.lagermitarbeiter, this.zeit));
 
-	/**
-	 * Gibt den Pfad zur Lagerdatei zurueck.
-	 * @return den Pfad
-	 */
-	public String getPfadLager() {
-		return pfadLager;
-	}
+        Thread tLagermitarbeiter = new Thread(this.lagermitarbeiter);
+        tLagermitarbeiter.start();
 
-	/**
-	 * Eine Setter-Methode um den Pfad zum Lagerfile zusetzen.
-	 * @param pfadLager Pfad zur Lagerdatei, darf nicht null oder kleiner als 1 sein
-	 */
-	public void setPfadLager(String pfadLager) {
-		if(pfadLager!=null && pfadLager.length()>=1) {
-			this.pfadLager = pfadLager;
-		}
-	}
+        // Lieferanten Thread-Pool starten
+        for(int i = 0; i < this.anzahlLief; i++)
+        {
+            Lieferant lieferant = new Lieferant(this.lagermitarbeiter);
+            executerLieferant.execute(lieferant);
+            watchdogs.add(new WatchDog(lieferant, this.zeit));
+        }
 
-	/**
-	 * Gibt den Pfad zur Logdatei zurueck.
-	 * @return den Pfad
-	 */
-	public String getPfadLog() {
-		return pfadLog;
-	}
+        // Monteur Thread-Pool starten
+        int mId = 1;
+        for(int i = 0; i < this.anzahlMon; i++)
+        {
+            Monteur monteur = new Monteur(mId, this.lagermitarbeiter);
+            executerMonteur.execute(monteur);
+            watchdogs.add(new WatchDog(monteur, this.zeit));
+            mId++;
+        }
 
-	/**
-	 * Eine Setter-Methode um den Pfad zum Logfile zusetzen.
-	 * @param pfadLog Pfad zur Logdatei, darf nicht null oder kleiner als 1 sein
-	 */
-	public void setPfadLog(String pfadLog) {
-		if(pfadLog!=null && pfadLager.length()>=1) {
-			this.pfadLog = pfadLog;
-		}
-	}
-
-	/**
-	 * Gibt die Anzahl der Montuere zurueck.
-	 * @return die Anzahl
-	 */
-	public int getAnzahlMon() {
-		return anzahlMon;
-	}
-
-	/**
-	 * Eine Setter-Methode um die Anzahl der Montuere zusetzen.
-	 * @param anzahlMon die Anzahl, darf nicht kleiner als 0 sein
-	 */
-	public void setAnzahlMon(int anzahlMon) {
-		if(anzahlMon>=0) {
-			this.anzahlMon = anzahlMon;
-		}
-	}
-
-	/**
-	 * Gibt die Anzahl der Lieferant zurueck.
-	 * @return die Anzahl
-	 */
-	public int getAnzahlLief() {
-		return anzahlLief;
-	}
-
-	/**
-	 * Eine Setter-Methode fuer die Lieferant.
-	 * @param anzahlLief
-	 */
-	public void setAnzahlLief(int anzahlLief) {
-		if(anzahlLief>=1) {
-			this.anzahlLief = anzahlLief;
-		}
-	}
-	
-	/**
-	 * Gibt die Zeit zurueck wie lange Threedeas produziert werden.
-	 * @return die Zeit in Millisekunden
-	 */
-	public long getZeit() {
-		return zeit;
-	}
-
-	/**
-	 * Eine Setter-Methode die die Zeit setzt
-	 * @param zeit in Millisekunden, dart nicht kleiner als 1 sein.
-	 */
-	public void setZeit(long zeit) {
-		if(zeit>=1) {
-			this.zeit = zeit;
-		}
-	}
+        // WatchDoG Thread-Pool starten
+        for(int i = 0; i <watchdogs.size(); i++)
+        {
+            executerWatchdog.execute(watchdogs.get(i));
+        }
+    }
 }

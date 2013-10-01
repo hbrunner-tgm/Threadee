@@ -1,25 +1,25 @@
 package tgm;
 
-import tgm.Lagermitarbeiter.NoItemsException;
-
-public class Monteur implements Runnable {
+public class Monteur implements Stoppable {
 	
 	private int id;
 	private Lagermitarbeiter l;
 	
-	public Monteur(int id) {
+	public Monteur(int id, Lagermitarbeiter lagermitarbeiter) {
 		this.id=id;
+        this.l = lagermitarbeiter;
 	}
 
 	@Override
 	public void run() {
 		for(int i=0;i<4;i++) {
-			try {
-				l.getTeile(i);
-			} catch (NoItemsException e) {
-				System.out.println("Keine Teile mehr!");
-			}
+                //TODO: Implementieren
+				//l.getTeile(i);
 		}
 	}
-	
+
+    @Override
+    public void stop() {
+
+    }
 }
