@@ -1,9 +1,9 @@
 package tgm;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Lagermitarbeiter implements Stoppable
 {
@@ -12,8 +12,13 @@ public class Lagermitarbeiter implements Stoppable
     private String basePath;
 
     // lagerbestände
-    private HashMap<String, ETeil> teile;
-    private HashMap<String, ETeil> pending;
+    private ConcurrentLinkedQueue<String> arm;
+    private ConcurrentLinkedQueue<String> auge;
+    private ConcurrentLinkedQueue<String> rumpf;
+    private ConcurrentLinkedQueue<String> kettenantrieb;
+
+    // herausgenomme teile
+    private ConcurrentLinkedQueue<String> pending;
 
     enum ETeil
     {
@@ -27,8 +32,13 @@ public class Lagermitarbeiter implements Stoppable
     {
         // lager pfad
         this.basePath = path;
+
+        this.arm = new ConcurrentLinkedQueue<String>();
+        this.auge = new ConcurrentLinkedQueue<String>();
+        this.rumpf = new ConcurrentLinkedQueue<String>();
+        this.kettenantrieb = new ConcurrentLinkedQueue<String>();
         // gerade aus dem lager geholte teile, noch nicht fertig
-        this.pending = new HashMap<String, ETeil>();
+        this.pending = new ConcurrentLinkedQueue<String>();
 
         try
         {
@@ -36,7 +46,6 @@ public class Lagermitarbeiter implements Stoppable
         }
         catch (IOException e)
         {
-
         }
     }
 
@@ -45,23 +54,24 @@ public class Lagermitarbeiter implements Stoppable
      *
      * @param type Der Typ des Teils (Verfügbar: TEIL_ARM, TEIL_AUGE, TEIL_KETTENANTRIEB, TEIL_RUMPF)
      * @param teil Das Teil selber
-     * @return true wenn das Element hinzugefügt wurde, false falls nicht
+     * @noreturn
      */
-    public boolean addTeil(ETeil type, String teil)
+    public void addTeil(ETeil type, String teil)
     {
-        synchronized (this)
+        switch(type)
         {
-            // existierst das Teil schon?
-            if(this.teile.get(teil) == null)
-            {
-                this.teile.put(teil, type);
-
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            case TEIL_ARM:
+                this.arm.add(teil);
+                break;
+            case TEIL_AUGE:
+                this.auge.add(teil);
+                break;
+            case TEIL_RUMPF:
+                this.rumpf.add(teil);
+                break;
+            case TEIL_KETTENANTRIEB:
+                this.kettenantrieb.add(teil);
+                break;
         }
     }
 
@@ -76,63 +86,68 @@ public class Lagermitarbeiter implements Stoppable
      */
     public String getTeil(ETeil type)
     {
-        synchronized (this)
-        {
-            // durch alle vorhandenen teile durchloopen und nach dem Teil suchen
-            for(Map.Entry<String, ETeil> teil : this.teile.entrySet())
-            {
-                if(teil.getValue() == type)
-                {
-                    // im Lager entfernen
-                    this.teile.remove(teil.getKey());
-                    // temporäre Map, nimmt elemente wie dieses auf
-                    this.pending.put(teil.getKey(), teil.getValue());
+        String teil;
 
-                    return teil.getKey();
-                }
-            }
-            return null;
+        switch(type)
+        {
+            case TEIL_ARM:
+                teil = this.arm.poll();
+                this.pending.add(teil);
+                break;
+            case TEIL_AUGE:
+                teil = this.auge.poll();
+                this.pending.add(teil);
+                break;
+            case TEIL_RUMPF:
+                teil = this.rumpf.poll();
+                this.pending.add(teil);
+                break;
+            case TEIL_KETTENANTRIEB:
+                teil = this.kettenantrieb.poll();
+                break;
+            default:
+                teil = null;
+                break;
         }
+        return teil;
     }
 
     /**
      * Ein Teil komplett aus dem Lager entfernen.
      *
      * @param teil Teil, welches entfernt werden soll
-     * @return true, wenn Teil exiistiert hat und gelöscht wurde, false wenn nicht
+     * @noreturn
      */
-    public boolean removeTeil(String teil)
+    public void removeTeil(String teil)
     {
-        synchronized (this)
-        {
-            if(this.pending.get(teil) == null) return false;
-            this.pending.remove(teil);
-            return true;
-        }
+        this.pending.remove(teil);
     }
 
     /**
      * Ein Teil wieder ins Lager zurück legen.
      *
      * @param teil Teil, welches zurückgelegt werden soll.
-     * @return true, wenn Teil erfolgreich zurückgelegt wurde, false wenn nicht
+     * @noreturn
      */
-    public boolean zuruckLegen(String teil)
+    public void zuruckLegen(String teil, ETeil type)
     {
-        synchronized (this)
+        this.pending.remove(teil);
+
+        switch(type)
         {
-            // benötigt zur eindeutigen indentifiezierung im Lager
-            ETeil eteil = this.pending.get(teil);
-
-            if(eteil != null)
-            {
-                this.pending.remove(teil);
-                this.teile.put(teil, eteil);
-
-                return true;
-            }
+            case TEIL_ARM:
+                this.arm.add(teil);
+                break;
+            case TEIL_AUGE:
+                this.auge.add(teil);
+                break;
+            case TEIL_RUMPF:
+                this.rumpf.add(teil);
+                break;
+            case TEIL_KETTENANTRIEB:
+                this.kettenantrieb.add(teil);
+                break;
         }
-        return false;
     }
 
     /**
@@ -157,22 +172,10 @@ public class Lagermitarbeiter implements Stoppable
 
 
         // wenn's keine exception gab, alles in die lokalen variablen schreiben
-        for(String teil: auge)
-        {
-            this.teile.put(teil, ETeil.TEIL_AUGE);
-        }
-        for(String teil: arm)
-        {
-            this.teile.put(teil, ETeil.TEIL_ARM);
-        }
-        for(String teil: rumpf)
-        {
-            this.teile.put(teil, ETeil.TEIL_RUMPF);
-        }
-        for(String teil: kettenantrieb)
-        {
-            this.teile.put(teil, ETeil.TEIL_KETTENANTRIEB);
-        }
+        this.auge.addAll(auge);
+        this.arm.addAll(arm);
+        this.rumpf.addAll(rumpf);
+        this.kettenantrieb.addAll(kettenantrieb);
 
         this.isRunning = true;
     }
@@ -221,15 +224,15 @@ public class Lagermitarbeiter implements Stoppable
      * @param data Object-Array, pro element eine Zeile
      * @return true, wenn Datei geschrieben wurde, false wenn nicht
      */
-    private boolean tryWriteFile(String path, Object[] data)
+    private boolean tryWriteFile(String path, Queue<String> data)
     {
         try
         {
             RandomAccessFile r = new RandomAccessFile(path, "rw");
 
-            for(Object line:data)
+            for(String line:data)
             {
-                r.writeUTF((String)line);
+                r.writeUTF(line + "\n");
             }
             r.close();
 
@@ -246,43 +249,14 @@ public class Lagermitarbeiter implements Stoppable
     {
         while(this.isRunning)
         {
-            // temporäre variablen, benötigt um Teile in die richtige datei zu schreiben
-            LinkedList<String> augen = new LinkedList<String>();
-            LinkedList<String> arme = new LinkedList<String>();
-            LinkedList<String> ketten = new LinkedList<String>();
-            LinkedList<String> rumpfe = new LinkedList<String>();
-
-            synchronized (this)
-            {
-                // alle daten speichern
-                for(Map.Entry<String, ETeil> teil : this.teile.entrySet())
-                {
-                    switch(teil.getValue())
-                    {
-                        case TEIL_AUGE:
-                            augen.add(teil.getKey());
-                            break;
-                        case TEIL_ARM:
-                            arme.add(teil.getKey());
-                            break;
-                        case TEIL_KETTENANTRIEB:
-                            ketten.add(teil.getKey());
-                            break;
-                        case TEIL_RUMPF:
-                            rumpfe.add(teil.getKey());
-                            break;
-                    }
-                }
-            }
-
-            this.tryWriteFile(this.basePath+"augen.csv", augen.toArray());
-            this.tryWriteFile(this.basePath+"arme.csv", arme.toArray());
-            this.tryWriteFile(this.basePath+"kettenantriebe.csv", ketten.toArray());
-            this.tryWriteFile(this.basePath+"rumpfe.csv", rumpfe.toArray());
+            this.tryWriteFile(this.basePath+"augen.csv", this.auge);
+            this.tryWriteFile(this.basePath+"arme.csv", this.arm);
+            this.tryWriteFile(this.basePath+"kettenantriebe.csv", this.kettenantrieb);
+            this.tryWriteFile(this.basePath+"rumpfe.csv", this.rumpf);
 
             try
             {
-                Thread.sleep(1000);
+                Thread.sleep(2500);
             }
             catch(InterruptedException e)
             {

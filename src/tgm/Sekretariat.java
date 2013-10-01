@@ -80,5 +80,12 @@ public class Sekretariat
         {
             executerWatchdog.execute(watchdogs.get(i));
         }
+
+        // wenn alles fertig ist, executer service herunterfahren
+        // !!! SUPER WICHTIG !!!
+        // Ohne diese Befehle beendet sich das Programm NICHT automatisch!!
+        executerLieferant.shutdown();
+        executerMonteur.shutdown();
+        executerWatchdog.shutdown();
     }
 }

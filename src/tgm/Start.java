@@ -10,10 +10,9 @@ public class Start
 {
 	public static void main(String[] args)
     {
-		String pfadLager= args[0], pfadLog= args[1];
-		int lief= Integer.parseInt(args[2]), mon= Integer.parseInt(args[3]), lauf= Integer.parseInt(args[4]);
-		
-		Sekretariat r= new Sekretariat(pfadLager, pfadLog, mon, lief, lauf);
-		
+        String[] attr = new String[]{"--lager","E:/Schule/4. Jahrgang/SEW/Praxis/lager/","--logs","E:/Schule/4. Jahrgang/SEW/Praxis/logs/","--lieferanten","15","--monteure","25","--laufzeit","10000"};
+
+        CommandLineParser parser = new CommandLineParser(attr);
+        parser.parse();
 	}
 }
