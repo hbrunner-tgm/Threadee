@@ -1,15 +1,23 @@
 package tgm;
 
 import java.io.*;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 public class Lagermitarbeiter implements Stoppable
 {
     private boolean isRunning;
     // basis pfad zum Lager
     private String basePath;
+
+    // logging
+    private final static Logger logging = Logger.getLogger("Lagermitarbeiter");
 
     // lagerbestände
     private ConcurrentLinkedQueue<String> arm;
@@ -28,10 +36,28 @@ public class Lagermitarbeiter implements Stoppable
         TEIL_ARM
     };
 
-	public Lagermitarbeiter(String path)
+	public Lagermitarbeiter(String pfadLog, String pfadLager)
     {
         // lager pfad
-        this.basePath = path;
+        this.basePath = pfadLager;
+        this.logging.setLevel(Level.ALL);
+
+        pfadLog += "lagermitarbeiter.log";
+        try
+        {
+            File f = new File(pfadLog);
+            if(!f.exists()) f.createNewFile();
+
+            FileHandler fh = new FileHandler(pfadLog);
+            SimpleFormatter formatter = new SimpleFormatter();
+            fh.setFormatter(formatter);
+            logging.addHandler(fh);
+
+        }
+        catch (IOException e)
+        {
+            System.out.println("File logging disabled");
+        }
 
         this.arm = new ConcurrentLinkedQueue<String>();
         this.auge = new ConcurrentLinkedQueue<String>();
@@ -46,6 +72,7 @@ public class Lagermitarbeiter implements Stoppable
         }
         catch (IOException e)
         {
+            logging.log(Level.SEVERE, "Fataler Fehler während der Initialisierung des Lagermitarbeiters!");
         }
     }
 
@@ -61,15 +88,19 @@ public class Lagermitarbeiter implements Stoppable
         switch(type)
         {
             case TEIL_ARM:
+                logging.log(Level.INFO, "Neuer Arm hinzugefügt: "+teil);
                 this.arm.add(teil);
                 break;
             case TEIL_AUGE:
+                logging.log(Level.INFO, "Neuer Auge hinzugefügt: "+teil);
                 this.auge.add(teil);
                 break;
             case TEIL_RUMPF:
+                logging.log(Level.INFO, "Neuer Rumpf hinzugefügt: "+teil);
                 this.rumpf.add(teil);
                 break;
             case TEIL_KETTENANTRIEB:
+                logging.log(Level.INFO, "Neuer Kettenantrieb hinzugefügt: "+teil);
                 this.kettenantrieb.add(teil);
                 break;
         }
@@ -93,23 +124,29 @@ public class Lagermitarbeiter implements Stoppable
             case TEIL_ARM:
                 teil = this.arm.poll();
                 this.pending.add(teil);
+                logging.log(Level.INFO, "Arm '"+teil+"' wurde aus dem Lager geholt");
                 break;
             case TEIL_AUGE:
                 teil = this.auge.poll();
                 this.pending.add(teil);
+                logging.log(Level.INFO, "Auge '"+teil+"' wurde aus dem Lager geholt");
                 break;
             case TEIL_RUMPF:
                 teil = this.rumpf.poll();
                 this.pending.add(teil);
+                logging.log(Level.INFO, "Rumpf '"+teil+"' wurde aus dem Lager geholt");
                 break;
             case TEIL_KETTENANTRIEB:
                 teil = this.kettenantrieb.poll();
+                this.pending.add(teil);
+                logging.log(Level.INFO, "Kettenantrieb '"+teil+"' wurde aus dem Lager geholt");
                 break;
             default:
                 teil = null;
                 break;
         }
         return teil;
+
     }
 
     /**
@@ -120,6 +157,7 @@ public class Lagermitarbeiter implements Stoppable
      */
     public void removeTeil(String teil)
     {
+        logging.log(Level.INFO, "Teil '"+teil+"' wurde aus dem Lager entfernt");
         this.pending.remove(teil);
     }
 
@@ -137,15 +175,19 @@ public class Lagermitarbeiter implements Stoppable
         {
             case TEIL_ARM:
                 this.arm.add(teil);
+                logging.log(Level.INFO, "Arm '"+teil+"' wurde in das Lager zurückgelegt.");
                 break;
             case TEIL_AUGE:
                 this.auge.add(teil);
+                logging.log(Level.INFO, "Auge '"+teil+"' wurde in das Lager zurückgelegt.");
                 break;
             case TEIL_RUMPF:
                 this.rumpf.add(teil);
+                logging.log(Level.INFO, "Rumpf '"+teil+"' wurde in das Lager zurückgelegt.");
                 break;
             case TEIL_KETTENANTRIEB:
                 this.kettenantrieb.add(teil);
+                logging.log(Level.INFO, "Kettenantrieb '"+teil+"' wurde in das Lager zurückgelegt.");
                 break;
         }
     }
@@ -170,7 +212,7 @@ public class Lagermitarbeiter implements Stoppable
         LinkedList<String> arm = this.tryLoadFile(this.basePath+"arme.csv");
         if(arm == null) throw new IOException();
 
-
+        System.out.println(arm.size());
         // wenn's keine exception gab, alles in die lokalen variablen schreiben
         this.auge.addAll(auge);
         this.arm.addAll(arm);
@@ -192,6 +234,11 @@ public class Lagermitarbeiter implements Stoppable
 
         try
         {
+            File f = new File(path);
+            if(f.exists()) f.delete();
+
+            f.createNewFile();
+
             FileReader fr = new FileReader(path);
             bf = new BufferedReader(fr);
 
@@ -209,10 +256,12 @@ public class Lagermitarbeiter implements Stoppable
         }
         catch (FileNotFoundException e)
         {
+            logging.log(Level.SEVERE, "Unbekannter Fehler während dem einlesen des Lagerfiles '"+path+"'");
             return null;
         }
         catch (IOException e)
         {
+            logging.log(Level.SEVERE, "Unbekannter Fehler während dem einlesen des Lagerfiles '"+path+"'");
             return null;
         }
     }
@@ -228,46 +277,70 @@ public class Lagermitarbeiter implements Stoppable
     {
         try
         {
-            RandomAccessFile r = new RandomAccessFile(path, "rw");
+            File f = new File(path);
+
+            if(f.exists()) f.delete();
+            f.createNewFile();
+
+            FileWriter fw = new FileWriter(f.getAbsoluteFile(), true);
+            BufferedWriter bw = new BufferedWriter(fw);
+
+            String output = "";
 
             for(String line:data)
             {
-                r.writeUTF(line + "\n");
+                line +=  System.getProperty("line.separator");
+                output += line;
             }
-            r.close();
+            bw.write(output);
+            bw.close();
 
             return true;
         }
         catch (IOException e)
         {
+            logging.log(Level.SEVERE, "Unbekannter Fehler während des Schreibens der Datei '" + path + "'");
             return false;
         }
+    }
+
+    /**
+     * Alle Änderungen auf die Festplatte schreiben
+     * @noreturn
+     */
+    private void saveChanges()
+    {
+        this.tryWriteFile(this.basePath+"augen.csv", this.auge);
+        this.tryWriteFile(this.basePath+"arme.csv", this.arm);
+        this.tryWriteFile(this.basePath+"kettenantriebe.csv", this.kettenantrieb);
+        this.tryWriteFile(this.basePath+"rumpfe.csv", this.rumpf);
     }
 
     @Override
     public void run()
     {
+
         while(this.isRunning)
         {
-            this.tryWriteFile(this.basePath+"augen.csv", this.auge);
-            this.tryWriteFile(this.basePath+"arme.csv", this.arm);
-            this.tryWriteFile(this.basePath+"kettenantriebe.csv", this.kettenantrieb);
-            this.tryWriteFile(this.basePath+"rumpfe.csv", this.rumpf);
+            this.saveChanges();
 
             try
             {
-                Thread.sleep(2500);
+                Thread.sleep(1000);
             }
             catch(InterruptedException e)
             {
-
+                logging.log(Level.WARNING, "Thread wurde im Schlaf unterbrochen!");
             }
         }
+
     }
 
     @Override
-    public void stop() {
+    public void stop()
+    {
         this.isRunning = false;
+        logging.log(Level.INFO, "Arbeit beendet.");
     }
 }
 

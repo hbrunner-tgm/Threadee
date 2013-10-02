@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Hauptklasse, welche alle Arbeiter initialisiert und startet
@@ -16,12 +17,14 @@ import java.util.concurrent.TimeUnit;
 public class Sekretariat
 {
     private HashMap<Object, Integer> monteurID;
+    private AtomicInteger threadeeID;
 
     // Threads & Thread-Pools
     private Lagermitarbeiter lagermitarbeiter;
     private ThreadPoolExecutor executerMonteur, executerLieferant, executerWatchdog;
     private int anzahlMon, anzahlLief;
     private long zeit;
+    private String pfadLog;
     private int mid;
 
 	/**
@@ -34,8 +37,9 @@ public class Sekretariat
 	 * @param zeit wie lange das Programm laufen soll
 	 */
 	public Sekretariat(String pfadLager, String pfadLog, int anzahlMon, int anzahlLief, long zeit) {
-        this.lagermitarbeiter = new Lagermitarbeiter(pfadLager);
+        this.lagermitarbeiter = new Lagermitarbeiter(pfadLog, pfadLager);
         this.monteurID = new HashMap<Object, Integer>();
+        this.threadeeID = new AtomicInteger();
 
         this.executerLieferant = new ThreadPoolExecutor(anzahlLief, anzahlLief, zeit, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(anzahlLief));
         this.executerMonteur = new ThreadPoolExecutor(anzahlMon, anzahlMon, zeit, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(anzahlMon));
@@ -44,6 +48,7 @@ public class Sekretariat
         this.anzahlLief = anzahlLief;
         this.anzahlMon = anzahlMon;
         this.zeit = zeit;
+        this.pfadLog = pfadLog;
 	}
 
     /**
@@ -52,7 +57,7 @@ public class Sekretariat
     public void startWork()
     {
         ArrayList<Runnable> watchdogs = new ArrayList<Runnable>();
-        watchdogs.add(new WatchDog(this.lagermitarbeiter, this.zeit));
+        watchdogs.add(new WatchDog(this.lagermitarbeiter, this.zeit+1000));
 
         Thread tLagermitarbeiter = new Thread(this.lagermitarbeiter);
         tLagermitarbeiter.start();
@@ -60,7 +65,7 @@ public class Sekretariat
         // Lieferanten Thread-Pool starten
         for(int i = 0; i < this.anzahlLief; i++)
         {
-            Lieferant lieferant = new Lieferant(this.lagermitarbeiter);
+            Lieferant lieferant = new Lieferant(pfadLog, this.lagermitarbeiter);
             executerLieferant.execute(lieferant);
             watchdogs.add(new WatchDog(lieferant, this.zeit));
         }
@@ -69,7 +74,7 @@ public class Sekretariat
         int mId = 1;
         for(int i = 0; i < this.anzahlMon; i++)
         {
-            Monteur monteur = new Monteur(mId, this.lagermitarbeiter);
+            Monteur monteur = new Monteur(pfadLog, mId, this.lagermitarbeiter, this);
             executerMonteur.execute(monteur);
             watchdogs.add(new WatchDog(monteur, this.zeit));
             mId++;
@@ -87,5 +92,10 @@ public class Sekretariat
         executerLieferant.shutdown();
         executerMonteur.shutdown();
         executerWatchdog.shutdown();
+    }
+
+    public int getNextThreadee()
+    {
+        return this.threadeeID.incrementAndGet();
     }
 }

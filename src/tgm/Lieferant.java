@@ -1,12 +1,36 @@
 package tgm;
 
-public class Lieferant implements Stoppable {
+import java.io.File;
+import java.io.IOException;
+import java.util.logging.FileHandler;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
+public class Lieferant implements Stoppable
+{
+    private final static Logger logger = Logger.getLogger("Lieferant");
     private Lagermitarbeiter lagermitarbeiter;
 
-    public Lieferant(Lagermitarbeiter lagermitarbeiter)
+    public Lieferant(String pfadLog, Lagermitarbeiter lagermitarbeiter)
     {
         this.lagermitarbeiter = lagermitarbeiter;
+
+        pfadLog += "lieferant.log";
+        try
+        {
+            File f = new File(pfadLog);
+            if(!f.exists()) f.createNewFile();
+
+            FileHandler fh = new FileHandler(pfadLog);
+            SimpleFormatter formatter = new SimpleFormatter();
+            fh.setFormatter(formatter);
+            logger.addHandler(fh);
+
+        }
+        catch (IOException e)
+        {
+            System.out.println("File logging disabled");
+        }
     }
 
 	@Override
