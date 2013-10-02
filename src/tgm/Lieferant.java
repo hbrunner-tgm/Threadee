@@ -41,46 +41,26 @@ public class Lieferant implements Stoppable
 
 	@Override
 	public void run() {
-		/*
-
-        BEISPIEL:
-
-        this.lagermitarbeiter.addTeil(Lagermitarbeiter.ETeil.TEIL_ARM, "ARM");
-        String teil = this.lagermitarbeiter.getTeil(Lagermitarbeiter.ETeil.TEIL_ARM);
-        System.out.println(teil);
-        this.lagermitarbeiter.zuruckLegen(teil, Lagermitarbeiter.ETeil.TEIL_ARM);
-
-        while(this.running)
-        {
-            try
-            {
-                Thread.sleep(1000);
-            }
-            catch(InterruptedException e)
-            {
-
-            }
-        }
-        System.out.println("*** KILLED (LIEFERANT)");
-
-		 */
-
-		while(true) {
+		while(this.running) {
 			
 			switch(r.nextInt(4)+1)
 			{
 			case 1:
-				this.lagermitarbeiter.addTeil(Lagermitarbeiter.ETeil.TEIL_ARM, this.pgnr());
+				this.lagermitarbeiter.addTeil(Lagermitarbeiter.ETeil.TEIL_ARM, this.pgnr("Arm"));
+                logger.log(Level.INFO, "Neuer Arm wurde angeliefert!");
 			case 2:
-				this.lagermitarbeiter.addTeil(Lagermitarbeiter.ETeil.TEIL_AUGE, this.pgnr());
+				this.lagermitarbeiter.addTeil(Lagermitarbeiter.ETeil.TEIL_AUGE, this.pgnr("Auge"));
+                logger.log(Level.INFO, "Neues Auge wurde angeliefert!");
 			case 3:
-				this.lagermitarbeiter.addTeil(Lagermitarbeiter.ETeil.TEIL_KETTENANTRIEB, this.pgnr());
+				this.lagermitarbeiter.addTeil(Lagermitarbeiter.ETeil.TEIL_KETTENANTRIEB, this.pgnr("Kettenantrieb"));
+                logger.log(Level.INFO, "Neuer Kettenantrieb wurde angeliefert!");
 			case 4:
-				this.lagermitarbeiter.addTeil(Lagermitarbeiter.ETeil.TEIL_RUMPF, this.pgnr());
+				this.lagermitarbeiter.addTeil(Lagermitarbeiter.ETeil.TEIL_RUMPF, this.pgnr("Rumpf"));
+                logger.log(Level.INFO, "Neuer Rumpf wurde angeliefert!");
 			}
 			
 			try {
-				Thread.sleep(this.getNextDeliveryTime());
+				Thread.sleep(100);
 			} catch (InterruptedException e) {
 				logger.log(Level.WARNING, "Thread wurde im Schlaf unterbrochen!");
 			}
@@ -93,9 +73,8 @@ public class Lieferant implements Stoppable
 	 * Eine Methode die Random-Numbers genriert f??r das LagerFile
 	 * @return als Text die Random-Numbers
 	 */
-	public String pgnr() {
-		r.setSeed(78160);
-		String str="";
+	public String pgnr(String type) {
+		String str=type+",";
 
 		int[] array= new int[20];
 
@@ -107,18 +86,6 @@ public class Lieferant implements Stoppable
 		}
 
 		return str;
-	}
-
-	/**
-	 * Liefert die Zeit die dann den Thread kurz pausiert.
-	 * @return die neue Zeit
-	 */
-	private long getNextDeliveryTime() {
-		long out;
-		do{
-			out= (long) r.nextInt(2000);
-		}while(out<100 && out % 10 >0);
-		return out;
 	}
 	
 	public void stop() {

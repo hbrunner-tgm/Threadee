@@ -42,7 +42,7 @@ public class Lagermitarbeiter implements Stoppable
         this.basePath = pfadLager;
         this.logging.setLevel(Level.ALL);
 
-        pfadLog += "lagermitarbeiter.log";
+        pfadLog += "/lagermitarbeiter.log";
         try
         {
             File f = new File(pfadLog);
@@ -123,22 +123,22 @@ public class Lagermitarbeiter implements Stoppable
         {
             case TEIL_ARM:
                 teil = this.arm.poll();
-                this.pending.add(teil);
+                if(teil != null) this.pending.add(teil);
                 logging.log(Level.INFO, "Arm '"+teil+"' wurde aus dem Lager geholt");
                 break;
             case TEIL_AUGE:
                 teil = this.auge.poll();
-                this.pending.add(teil);
+                if(teil != null)this.pending.add(teil);
                 logging.log(Level.INFO, "Auge '"+teil+"' wurde aus dem Lager geholt");
                 break;
             case TEIL_RUMPF:
                 teil = this.rumpf.poll();
-                this.pending.add(teil);
+                if(teil != null)this.pending.add(teil);
                 logging.log(Level.INFO, "Rumpf '"+teil+"' wurde aus dem Lager geholt");
                 break;
             case TEIL_KETTENANTRIEB:
                 teil = this.kettenantrieb.poll();
-                this.pending.add(teil);
+                if(teil != null) this.pending.add(teil);
                 logging.log(Level.INFO, "Kettenantrieb '"+teil+"' wurde aus dem Lager geholt");
                 break;
             default:
@@ -310,10 +310,10 @@ public class Lagermitarbeiter implements Stoppable
      */
     private void saveChanges()
     {
-        this.tryWriteFile(this.basePath+"augen.csv", this.auge);
-        this.tryWriteFile(this.basePath+"arme.csv", this.arm);
-        this.tryWriteFile(this.basePath+"kettenantriebe.csv", this.kettenantrieb);
-        this.tryWriteFile(this.basePath+"rumpfe.csv", this.rumpf);
+        this.tryWriteFile(this.basePath+"/augen.csv", this.auge);
+        this.tryWriteFile(this.basePath+"/arme.csv", this.arm);
+        this.tryWriteFile(this.basePath+"/kettenantriebe.csv", this.kettenantrieb);
+        this.tryWriteFile(this.basePath+"/rumpfe.csv", this.rumpf);
     }
 
     @Override

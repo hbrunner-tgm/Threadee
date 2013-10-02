@@ -49,6 +49,7 @@ public class SafeWriter
         try
         {
             this.bw.write(line+System.getProperty("line.separator"));
+            this.bw.flush();
 
             return true;
         }
