@@ -90,7 +90,7 @@ public class Lieferant implements Stoppable
 	}
 
 	/**
-	 * Eine Methode die Random-Numbers genriert für das LagerFile
+	 * Eine Methode die Random-Numbers genriert f??r das LagerFile
 	 * @return als Text die Random-Numbers
 	 */
 	public String pgnr() {
