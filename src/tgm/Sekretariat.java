@@ -24,7 +24,7 @@ public class Sekretariat
     private ThreadPoolExecutor executerMonteur, executerLieferant, executerWatchdog;
     private int anzahlMon, anzahlLief;
     private long zeit;
-    private String pfadLog;
+    private String pfadLog, pfadLager;
     private int mid;
 
 	/**
@@ -49,6 +49,7 @@ public class Sekretariat
         this.anzahlMon = anzahlMon;
         this.zeit = zeit;
         this.pfadLog = pfadLog;
+        this.pfadLager = pfadLager;
 	}
 
     /**
@@ -74,7 +75,7 @@ public class Sekretariat
         int mId = 1;
         for(int i = 0; i < this.anzahlMon; i++)
         {
-            Monteur monteur = new Monteur(pfadLog, mId, this.lagermitarbeiter, this);
+            Monteur monteur = new Monteur(this.pfadLog, this.pfadLager, mId, this.lagermitarbeiter, this);
             executerMonteur.execute(monteur);
             watchdogs.add(new WatchDog(monteur, this.zeit));
             mId++;

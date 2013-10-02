@@ -17,7 +17,7 @@ public class Monteur implements Stoppable
     private boolean running;
     private int[] armsorted, augesorted, kettensorted, rumpfsorted;
 
-	public Monteur(String pfadLog, int id, Lagermitarbeiter lagermitarbeiter, Sekretariat sekretariat) {
+	public Monteur(String pfadLog, String pfadLager, int id, Lagermitarbeiter lagermitarbeiter, Sekretariat sekretariat) {
 		this.id = id;
         this.lagermitarbeiter = lagermitarbeiter;
         this.sekretariat = sekretariat;
