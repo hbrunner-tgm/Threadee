@@ -20,7 +20,7 @@ public class CommandLineParser
     public CommandLineParser(String[] args)
     {
         this.args = args;
-        // dies beinhaltet alle verfügbaren argumente des programmes
+        // dies beinhaltet alle verf??gbaren argumente des programmes
         this.options = new Options();
 
         // alle argumente definieren
@@ -49,7 +49,7 @@ public class CommandLineParser
                 .withDescription("zeit wie lange die simulation laufen soll (in ms)")
                 .create( "laufzeit" );
 
-        // zu der liste der verfügbaren attribute hinzufügen
+        // zu der liste der verf??gbaren attribute hinzuf??gen
         this.options.addOption(lager);
         this.options.addOption(logs);
         this.options.addOption(lieferanten);

@@ -19,7 +19,7 @@ public class Lagermitarbeiter implements Stoppable
     // logging
     private final static Logger logging = Logger.getLogger("Lagermitarbeiter");
 
-    // lagerbestände
+    // lagerbest??nde
     private ConcurrentLinkedQueue<String> arm;
     private ConcurrentLinkedQueue<String> auge;
     private ConcurrentLinkedQueue<String> rumpf;
@@ -72,14 +72,14 @@ public class Lagermitarbeiter implements Stoppable
         }
         catch (IOException e)
         {
-            logging.log(Level.SEVERE, "Fataler Fehler während der Initialisierung des Lagermitarbeiters!");
+            logging.log(Level.SEVERE, "Fataler Fehler w??hrend der Initialisierung des Lagermitarbeiters!");
         }
     }
 
     /**
-     * Fügt ein neues Teil zum Lager hinzu, falls noch nicht vorhanden.
+     * F??gt ein neues Teil zum Lager hinzu, falls noch nicht vorhanden.
      *
-     * @param type Der Typ des Teils (Verfügbar: TEIL_ARM, TEIL_AUGE, TEIL_KETTENANTRIEB, TEIL_RUMPF)
+     * @param type Der Typ des Teils (Verf??gbar: TEIL_ARM, TEIL_AUGE, TEIL_KETTENANTRIEB, TEIL_RUMPF)
      * @param teil Das Teil selber
      * @noreturn
      */
@@ -88,32 +88,32 @@ public class Lagermitarbeiter implements Stoppable
         switch(type)
         {
             case TEIL_ARM:
-                logging.log(Level.INFO, "Neuer Arm hinzugefügt: "+teil);
+                logging.log(Level.INFO, "Neuer Arm hinzugef??gt: "+teil);
                 this.arm.add(teil);
                 break;
             case TEIL_AUGE:
-                logging.log(Level.INFO, "Neuer Auge hinzugefügt: "+teil);
+                logging.log(Level.INFO, "Neuer Auge hinzugef??gt: "+teil);
                 this.auge.add(teil);
                 break;
             case TEIL_RUMPF:
-                logging.log(Level.INFO, "Neuer Rumpf hinzugefügt: "+teil);
+                logging.log(Level.INFO, "Neuer Rumpf hinzugef??gt: "+teil);
                 this.rumpf.add(teil);
                 break;
             case TEIL_KETTENANTRIEB:
-                logging.log(Level.INFO, "Neuer Kettenantrieb hinzugefügt: "+teil);
+                logging.log(Level.INFO, "Neuer Kettenantrieb hinzugef??gt: "+teil);
                 this.kettenantrieb.add(teil);
                 break;
         }
     }
 
     /**
-     * Nächstes Teil aus dem Lager holen.
-     * Diese Methode verschiebt das Teil in eine temporäre Map, nicht vergessen das Teil komplett zu entfernen!
+     * N??chstes Teil aus dem Lager holen.
+     * Diese Methode verschiebt das Teil in eine tempor??re Map, nicht vergessen das Teil komplett zu entfernen!
      *
      * Das geschieht entweder durch removeTeil(String teil) oder durch zuruckLegen(String teil)
      *
      * @param type Typ des Teils, nachdem gesucht wird
-     * @return Ein String, welches das Teil enthält, null bei Fehler/nicht existenz
+     * @return Ein String, welches das Teil enth??lt, null bei Fehler/nicht existenz
      */
     public String getTeil(ETeil type)
     {
@@ -162,9 +162,9 @@ public class Lagermitarbeiter implements Stoppable
     }
 
     /**
-     * Ein Teil wieder ins Lager zurück legen.
+     * Ein Teil wieder ins Lager zur??ck legen.
      *
-     * @param teil Teil, welches zurückgelegt werden soll.
+     * @param teil Teil, welches zur??ckgelegt werden soll.
      * @noreturn
      */
     public void zuruckLegen(String teil, ETeil type)
@@ -175,19 +175,19 @@ public class Lagermitarbeiter implements Stoppable
         {
             case TEIL_ARM:
                 this.arm.add(teil);
-                logging.log(Level.INFO, "Arm '"+teil+"' wurde in das Lager zurückgelegt.");
+                logging.log(Level.INFO, "Arm '"+teil+"' wurde in das Lager zur??ckgelegt.");
                 break;
             case TEIL_AUGE:
                 this.auge.add(teil);
-                logging.log(Level.INFO, "Auge '"+teil+"' wurde in das Lager zurückgelegt.");
+                logging.log(Level.INFO, "Auge '"+teil+"' wurde in das Lager zur??ckgelegt.");
                 break;
             case TEIL_RUMPF:
                 this.rumpf.add(teil);
-                logging.log(Level.INFO, "Rumpf '"+teil+"' wurde in das Lager zurückgelegt.");
+                logging.log(Level.INFO, "Rumpf '"+teil+"' wurde in das Lager zur??ckgelegt.");
                 break;
             case TEIL_KETTENANTRIEB:
                 this.kettenantrieb.add(teil);
-                logging.log(Level.INFO, "Kettenantrieb '"+teil+"' wurde in das Lager zurückgelegt.");
+                logging.log(Level.INFO, "Kettenantrieb '"+teil+"' wurde in das Lager zur??ckgelegt.");
                 break;
         }
     }
@@ -202,7 +202,7 @@ public class Lagermitarbeiter implements Stoppable
         // augen einlesen
         LinkedList<String> auge = this.tryLoadFile(this.basePath+"augen.csv");
         if(auge == null) throw new IOException();
-        // rümpfe einlesen
+        // r??mpfe einlesen
         LinkedList<String> rumpf = this.tryLoadFile(this.basePath+"rumpfe.csv");
         if(rumpf == null) throw new IOException();
         // kettenantriebe einlesen
@@ -226,7 +226,7 @@ public class Lagermitarbeiter implements Stoppable
      * Safe-way um eine Datei zu laden.
      *
      * @param path Eindeutiger, Absoluter Pfad zur Datei (mit endung)
-     * @return LinkedList, welche pro element eine Zeile enthält. Bei Fehler null
+     * @return LinkedList, welche pro element eine Zeile enth??lt. Bei Fehler null
      */
     private LinkedList<String> tryLoadFile(String path)
     {
@@ -256,12 +256,12 @@ public class Lagermitarbeiter implements Stoppable
         }
         catch (FileNotFoundException e)
         {
-            logging.log(Level.SEVERE, "Unbekannter Fehler während dem einlesen des Lagerfiles '"+path+"'");
+            logging.log(Level.SEVERE, "Unbekannter Fehler w??hrend dem einlesen des Lagerfiles '"+path+"'");
             return null;
         }
         catch (IOException e)
         {
-            logging.log(Level.SEVERE, "Unbekannter Fehler während dem einlesen des Lagerfiles '"+path+"'");
+            logging.log(Level.SEVERE, "Unbekannter Fehler w??hrend dem einlesen des Lagerfiles '"+path+"'");
             return null;
         }
     }
@@ -299,13 +299,13 @@ public class Lagermitarbeiter implements Stoppable
         }
         catch (IOException e)
         {
-            logging.log(Level.SEVERE, "Unbekannter Fehler während des Schreibens der Datei '" + path + "'");
+            logging.log(Level.SEVERE, "Unbekannter Fehler w??hrend des Schreibens der Datei '" + path + "'");
             return false;
         }
     }
 
     /**
-     * Alle Änderungen auf die Festplatte schreiben
+     * Alle ??nderungen auf die Festplatte schreiben
      * @noreturn
      */
     private void saveChanges()

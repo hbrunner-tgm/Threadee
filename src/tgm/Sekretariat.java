@@ -28,7 +28,7 @@ public class Sekretariat
     private int mid;
 
 	/**
-	 * Alle benötigten Variablen dem Sekretariat zuordnen und Pools initialisieren
+	 * Alle ben??tigten Variablen dem Sekretariat zuordnen und Pools initialisieren
      *
 	 * @param pfadLager der Pfad zum Lagerfile
 	 * @param pfadLog der Pfad zum Logfile

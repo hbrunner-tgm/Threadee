@@ -1,7 +1,7 @@
 package tgm;
 
 /**
- * Stoppable Klasse, wird hauptstächlich von Watchdog(s) benutzt
+ * Stoppable Klasse, wird hauptst??chlich von Watchdog(s) benutzt
  *
  * @author Andreas Willinger
  * @version 0.1

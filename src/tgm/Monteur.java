@@ -1,6 +1,8 @@
 package tgm;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.logging.FileHandler;
@@ -16,12 +18,13 @@ public class Monteur implements Stoppable
     private Sekretariat sekretariat;
     private boolean running;
     private int[] armsorted, augesorted, kettensorted, rumpfsorted;
-
+    private BufferedWriter bw;
+    
 	public Monteur(String pfadLog, String pfadLager, int id, Lagermitarbeiter lagermitarbeiter, Sekretariat sekretariat) {
 		this.id = id;
         this.lagermitarbeiter = lagermitarbeiter;
         this.sekretariat = sekretariat;
-        this.running=true;
+        this.running=true;W
 
         pfadLog += "monteur.log";
         try
@@ -39,6 +42,17 @@ public class Monteur implements Stoppable
         {
             System.out.println("File logging disabled");
         }
+        
+        FileWriter f;
+		try {
+			f = new FileWriter(pfadLager, true);
+			bw = new BufferedWriter(f);
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
 	}
 
 	@Override
@@ -81,6 +95,7 @@ public class Monteur implements Stoppable
 			Arrays.sort(kettensorted);
 			Arrays.sort(rumpfsorted);
 			
+			this.zusammenbauen();
 		}
 	}
 	
