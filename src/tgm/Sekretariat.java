@@ -22,9 +22,10 @@ public class Sekretariat
     // Threads & Thread-Pools
     private Lagermitarbeiter lagermitarbeiter;
     private ThreadPoolExecutor executerMonteur, executerLieferant, executerWatchdog;
+    private SafeWriter writer;
     private int anzahlMon, anzahlLief;
     private long zeit;
-    private String pfadLog, pfadLager;
+    private String pfadLog;
     private int mid;
 
 	/**
@@ -40,6 +41,7 @@ public class Sekretariat
         this.lagermitarbeiter = new Lagermitarbeiter(pfadLog, pfadLager);
         this.monteurID = new HashMap<Object, Integer>();
         this.threadeeID = new AtomicInteger();
+        this.writer = new SafeWriter(pfadLager+"/auslieferung.csv");
 
         this.executerLieferant = new ThreadPoolExecutor(anzahlLief, anzahlLief, zeit, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(anzahlLief));
         this.executerMonteur = new ThreadPoolExecutor(anzahlMon, anzahlMon, zeit, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(anzahlMon));
@@ -49,7 +51,6 @@ public class Sekretariat
         this.anzahlMon = anzahlMon;
         this.zeit = zeit;
         this.pfadLog = pfadLog;
-        this.pfadLager = pfadLager;
 	}
 
     /**
@@ -75,7 +76,7 @@ public class Sekretariat
         int mId = 1;
         for(int i = 0; i < this.anzahlMon; i++)
         {
-            Monteur monteur = new Monteur(this.pfadLog, this.pfadLager, mId, this.lagermitarbeiter, this);
+            Monteur monteur = new Monteur(this.pfadLog, mId, this.writer, this.lagermitarbeiter, this);
             executerMonteur.execute(monteur);
             watchdogs.add(new WatchDog(monteur, this.zeit));
             mId++;
