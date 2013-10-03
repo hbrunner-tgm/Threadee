@@ -37,7 +37,8 @@ public class Sekretariat
 	 * @param anzahlLief die Anzahl der Lieferanten
 	 * @param zeit wie lange das Programm laufen soll
 	 */
-	public Sekretariat(String pfadLager, String pfadLog, int anzahlMon, int anzahlLief, long zeit) {
+	public Sekretariat(String pfadLager, String pfadLog, int anzahlMon, int anzahlLief, long zeit)
+    {
         this.lagermitarbeiter = new Lagermitarbeiter(pfadLog, pfadLager);
         this.monteurID = new HashMap<Object, Integer>();
         this.threadeeID = new AtomicInteger();

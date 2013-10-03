@@ -2,8 +2,6 @@ package tgm;
 
 import org.apache.commons.cli.*;
 
-import javax.swing.*;
-
 /**
  * Diese Klasse wird benutzt, um die Kommandozeilen Argumente im GNU Style zu parsen.
  *
@@ -119,6 +117,6 @@ public class CommandLineParser
     private void printHelp()
     {
         HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp("Start", this.options);
+        formatter.printHelp("Fabrik", this.options);
     }
 }
