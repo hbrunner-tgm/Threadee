@@ -24,6 +24,8 @@ public class Lagermitarbeiter implements Stoppable
     private ConcurrentLinkedQueue<String> auge;
     private ConcurrentLinkedQueue<String> rumpf;
     private ConcurrentLinkedQueue<String> kettenantrieb;
+    private ConcurrentLinkedQueue<String> antenne;
+    private ConcurrentLinkedQueue<String> greifer;
 
     // herausgenomme teile
     private ConcurrentLinkedQueue<String> pending;
@@ -33,7 +35,9 @@ public class Lagermitarbeiter implements Stoppable
         TEIL_AUGE,
         TEIL_RUMPF,
         TEIL_KETTENANTRIEB,
-        TEIL_ARM
+        TEIL_ARM,
+        TEIL_ANTENNE,
+        TEIL_GREIFER
     };
 
 	public Lagermitarbeiter(String pfadLog, String pfadLager)
@@ -63,6 +67,8 @@ public class Lagermitarbeiter implements Stoppable
         this.auge = new ConcurrentLinkedQueue<String>();
         this.rumpf = new ConcurrentLinkedQueue<String>();
         this.kettenantrieb = new ConcurrentLinkedQueue<String>();
+        this.antenne = new ConcurrentLinkedQueue<String>();
+        this.greifer = new ConcurrentLinkedQueue<String>();
         // gerade aus dem lager geholte teile, noch nicht fertig
         this.pending = new ConcurrentLinkedQueue<String>();
 
@@ -88,20 +94,28 @@ public class Lagermitarbeiter implements Stoppable
         switch(type)
         {
             case TEIL_ARM:
-                logging.log(Level.INFO, "Neuer Arm hinzugef??gt: "+teil);
+                logging.log(Level.INFO, "Neuer Arm hinzugefügt: "+teil);
                 this.arm.add(teil);
                 break;
             case TEIL_AUGE:
-                logging.log(Level.INFO, "Neuer Auge hinzugef??gt: "+teil);
+                logging.log(Level.INFO, "Neuer Auge hinzugefügt: "+teil);
                 this.auge.add(teil);
                 break;
             case TEIL_RUMPF:
-                logging.log(Level.INFO, "Neuer Rumpf hinzugef??gt: "+teil);
+                logging.log(Level.INFO, "Neuer Rumpf hinzugefügt: "+teil);
                 this.rumpf.add(teil);
                 break;
             case TEIL_KETTENANTRIEB:
-                logging.log(Level.INFO, "Neuer Kettenantrieb hinzugef??gt: "+teil);
+                logging.log(Level.INFO, "Neuer Kettenantrieb hinzugefügt: "+teil);
                 this.kettenantrieb.add(teil);
+                break;
+            case TEIL_ANTENNE:
+                logging.log(Level.INFO, "Neue Antenne hinzugefügt: "+teil);
+                this.antenne.add(teil);
+                break;
+            case TEIL_GREIFER:
+                logging.log(Level.INFO, "Neuer Greifer hinzugefügt: "+teil);
+                this.greifer.add(teil);
                 break;
         }
     }
@@ -140,6 +154,16 @@ public class Lagermitarbeiter implements Stoppable
                 teil = this.kettenantrieb.poll();
                 if(teil != null) this.pending.add(teil);
                 logging.log(Level.INFO, "Kettenantrieb '"+teil+"' wurde aus dem Lager geholt");
+                break;
+            case TEIL_ANTENNE:
+                teil = this.antenne.poll();
+                if(teil != null) this.pending.add(teil);
+                logging.log(Level.INFO, "Antenne '"+teil+"' wurde aus dem Lager geholt");
+                break;
+            case TEIL_GREIFER:
+                teil = this.greifer.poll();
+                if(teil != null) this.pending.add(teil);
+                logging.log(Level.INFO, "Greifer '"+teil+"' wurde aus dem Lager geholt");
                 break;
             default:
                 teil = null;
@@ -189,6 +213,14 @@ public class Lagermitarbeiter implements Stoppable
                 this.kettenantrieb.add(teil);
                 logging.log(Level.INFO, "Kettenantrieb '"+teil+"' wurde in das Lager zur??ckgelegt.");
                 break;
+            case TEIL_ANTENNE:
+                this.antenne.add(teil);
+                logging.log(Level.INFO, "Antenne '"+teil+"' wurde in das Lager zur??ckgelegt.");
+                break;
+            case TEIL_GREIFER:
+                this.greifer.add(teil);
+                logging.log(Level.INFO, "Greifer '"+teil+"' wurde in das Lager zur??ckgelegt.");
+                break;
         }
     }
 
@@ -211,6 +243,12 @@ public class Lagermitarbeiter implements Stoppable
         // arme einlesen
         LinkedList<String> arm = this.tryLoadFile(this.basePath+"arme.csv");
         if(arm == null) throw new IOException();
+        // antennen einlesen
+        LinkedList<String> antenne =this.tryLoadFile(this.basePath+"antennen.csv");
+        if(antenne == null) throw new IOException();
+        // greifer einlesen
+        LinkedList<String> greifer = this.tryLoadFile(this.basePath+"greifer.csv");
+        if(greifer == null) throw new IOException();
 
         System.out.println(arm.size());
         // wenn's keine exception gab, alles in die lokalen variablen schreiben
@@ -218,6 +256,8 @@ public class Lagermitarbeiter implements Stoppable
         this.arm.addAll(arm);
         this.rumpf.addAll(rumpf);
         this.kettenantrieb.addAll(kettenantrieb);
+        this.antenne.addAll(antenne);
+        this.greifer.addAll(greifer);
 
         this.isRunning = true;
     }
@@ -314,6 +354,8 @@ public class Lagermitarbeiter implements Stoppable
         this.tryWriteFile(this.basePath+"/arme.csv", this.arm);
         this.tryWriteFile(this.basePath+"/kettenantriebe.csv", this.kettenantrieb);
         this.tryWriteFile(this.basePath+"/rumpfe.csv", this.rumpf);
+        this.tryWriteFile(this.basePath+"/antennen.csv", this.antenne);
+        this.tryWriteFile(this.basePath+"/greifer.csv", this.greifer);
     }
 
     @Override

@@ -43,7 +43,7 @@ public class Lieferant implements Stoppable
 	public void run() {
 		while(this.running) {
 			
-			switch(r.nextInt(4)+1)
+			switch(r.nextInt(6)+1)
 			{
 			case 1:
 				this.lagermitarbeiter.addTeil(Lagermitarbeiter.ETeil.TEIL_ARM, this.pgnr("Arm"));
@@ -57,6 +57,12 @@ public class Lieferant implements Stoppable
 			case 4:
 				this.lagermitarbeiter.addTeil(Lagermitarbeiter.ETeil.TEIL_RUMPF, this.pgnr("Rumpf"));
                 logger.log(Level.INFO, "Neuer Rumpf wurde angeliefert!");
+            case 5:
+                this.lagermitarbeiter.addTeil(Lagermitarbeiter.ETeil.TEIL_ANTENNE, this.pgnr("Antenne"));
+                logger.log(Level.INFO, "Neue Antenne wurde angeliefert!");
+            case 6:
+                this.lagermitarbeiter.addTeil(Lagermitarbeiter.ETeil.TEIL_GREIFER, this.pgnr("Greifer"));
+                logger.log(Level.INFO, "Neuer Greifer wurde angeliefert!");
 			}
 			
 			try {

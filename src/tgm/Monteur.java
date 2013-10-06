@@ -15,7 +15,7 @@ public class Monteur implements Stoppable
 	private Lagermitarbeiter lagermitarbeiter;
     private Sekretariat sekretariat;
     private boolean running;
-    private int[] arm1sorted, arm2sorted, auge1sorted, auge2sorted, kettensorted, rumpfsorted;
+    private int[] arm1sorted, arm2sorted, auge1sorted, auge2sorted, kettensorted, rumpfsorted, antennesorted, greifer1sorted, greifer2sorted;
     private SafeWriter sw;
     
 	public Monteur(String pfadLog, int id, SafeWriter writer, Lagermitarbeiter lagermitarbeiter,  Sekretariat sekretariat) {
@@ -61,7 +61,7 @@ public class Monteur implements Stoppable
 	
 	public void zusammenbauen() {
 		//Zusammen bauen den Threedeas
-        String[] arrayarm1, arrayarm2, arrayauge1, arrayauge2, arrayketten, arrayrumpf;
+        String[] arrayarm1, arrayarm2, arrayauge1, arrayauge2, arrayketten, arrayrumpf, arrayantenne, arraygreifer1, arraygreifer2;
 
         String arm1 = this.lagermitarbeiter.getTeil(Lagermitarbeiter.ETeil.TEIL_ARM);
         logger.log(Level.INFO, "Hole 1. Arm aus dem Lager");
@@ -117,15 +117,61 @@ public class Monteur implements Stoppable
             this.lagermitarbeiter.zuruckLegen(arm2, Lagermitarbeiter.ETeil.TEIL_ARM);
             this.lagermitarbeiter.zuruckLegen(auge1, Lagermitarbeiter.ETeil.TEIL_AUGE);
             this.lagermitarbeiter.zuruckLegen(auge2, Lagermitarbeiter.ETeil.TEIL_AUGE);
-            this.lagermitarbeiter.zuruckLegen(kettenantrieb, Lagermitarbeiter.ETeil.TEIL_RUMPF);
+            this.lagermitarbeiter.zuruckLegen(kettenantrieb, Lagermitarbeiter.ETeil.TEIL_KETTENANTRIEB);
             return;
         }
+        String antenne = this.lagermitarbeiter.getTeil(Lagermitarbeiter.ETeil.TEIL_ANTENNE);
+        logger.log(Level.INFO, "Hole Antenne aus dem Lager");
+        if(rumpf == null)
+        {
+            logger.log(Level.WARNING, "Keine Antenne vorhanden, lege zurück");
+            this.lagermitarbeiter.zuruckLegen(arm1, Lagermitarbeiter.ETeil.TEIL_ARM);
+            this.lagermitarbeiter.zuruckLegen(arm2, Lagermitarbeiter.ETeil.TEIL_ARM);
+            this.lagermitarbeiter.zuruckLegen(auge1, Lagermitarbeiter.ETeil.TEIL_AUGE);
+            this.lagermitarbeiter.zuruckLegen(auge2, Lagermitarbeiter.ETeil.TEIL_AUGE);
+            this.lagermitarbeiter.zuruckLegen(kettenantrieb, Lagermitarbeiter.ETeil.TEIL_KETTENANTRIEB);
+            this.lagermitarbeiter.zuruckLegen(rumpf, Lagermitarbeiter.ETeil.TEIL_RUMPF);
+            return;
+        }
+        String greifer1 = this.lagermitarbeiter.getTeil(Lagermitarbeiter.ETeil.TEIL_GREIFER);
+        logger.log(Level.INFO, "Hole 1. Greifer aus dem Lager");
+        if(greifer1 == null)
+        {
+            logger.log(Level.WARNING, "Kein 1. Greifer vorhanden, lege zurück");
+            this.lagermitarbeiter.zuruckLegen(arm1, Lagermitarbeiter.ETeil.TEIL_ARM);
+            this.lagermitarbeiter.zuruckLegen(arm2, Lagermitarbeiter.ETeil.TEIL_ARM);
+            this.lagermitarbeiter.zuruckLegen(auge1, Lagermitarbeiter.ETeil.TEIL_AUGE);
+            this.lagermitarbeiter.zuruckLegen(auge2, Lagermitarbeiter.ETeil.TEIL_AUGE);
+            this.lagermitarbeiter.zuruckLegen(kettenantrieb, Lagermitarbeiter.ETeil.TEIL_KETTENANTRIEB);
+            this.lagermitarbeiter.zuruckLegen(rumpf, Lagermitarbeiter.ETeil.TEIL_RUMPF);
+            this.lagermitarbeiter.zuruckLegen(antenne, Lagermitarbeiter.ETeil.TEIL_ANTENNE);
+            return;
+        }
+        String greifer2 = this.lagermitarbeiter.getTeil(Lagermitarbeiter.ETeil.TEIL_GREIFER);
+        logger.log(Level.INFO, "Hole 2. Greifer aus dem Lager");
+        if(greifer2 == null)
+        {
+            logger.log(Level.WARNING, "Kein 2. Greifer vorhanden, lege zurück");
+            this.lagermitarbeiter.zuruckLegen(arm1, Lagermitarbeiter.ETeil.TEIL_ARM);
+            this.lagermitarbeiter.zuruckLegen(arm2, Lagermitarbeiter.ETeil.TEIL_ARM);
+            this.lagermitarbeiter.zuruckLegen(auge1, Lagermitarbeiter.ETeil.TEIL_AUGE);
+            this.lagermitarbeiter.zuruckLegen(auge2, Lagermitarbeiter.ETeil.TEIL_AUGE);
+            this.lagermitarbeiter.zuruckLegen(kettenantrieb, Lagermitarbeiter.ETeil.TEIL_KETTENANTRIEB);
+            this.lagermitarbeiter.zuruckLegen(rumpf, Lagermitarbeiter.ETeil.TEIL_RUMPF);
+            this.lagermitarbeiter.zuruckLegen(antenne, Lagermitarbeiter.ETeil.TEIL_ANTENNE);
+            this.lagermitarbeiter.zuruckLegen(greifer1, Lagermitarbeiter.ETeil.TEIL_GREIFER);
+            return;
+        }
+
         arrayarm1 = arm1.split(",");
         arrayarm2 = arm2.split(",");
         arrayauge1 = auge1.split(",");
         arrayauge2 = auge2.split(",");
         arrayketten= kettenantrieb.split(",");
         arrayrumpf= rumpf.split(",");
+        arrayantenne= antenne.split(",");
+        arraygreifer1= greifer1.split(",");
+        arraygreifer2= greifer2.split(",");
 
         arm1sorted= new int[arrayarm1.length-1];
         arm2sorted= new int[arrayarm2.length-1];
@@ -133,6 +179,9 @@ public class Monteur implements Stoppable
         auge2sorted = new int[arrayauge2.length-1];
         kettensorted= new int[arrayketten.length-1];
         rumpfsorted= new int[arrayrumpf.length-1];
+        antennesorted = new int[arrayantenne.length-1];
+        greifer1sorted = new int[arraygreifer1.length-1];
+        greifer2sorted = new int[arraygreifer2.length-1];
 
         for(int i=1;i<arm1sorted.length;i++) {
             arm1sorted[i]= Integer.parseInt(arrayarm1[i]);
@@ -152,6 +201,15 @@ public class Monteur implements Stoppable
         for(int i=1;i<rumpfsorted.length;i++) {
             rumpfsorted[i]= Integer.parseInt(arrayrumpf[i]);
         }
+        for(int i=1;i<antennesorted.length;i++) {
+            antennesorted[i]= Integer.parseInt(arrayantenne[i]);
+        }
+        for(int i=1;i<greifer1sorted.length;i++) {
+            greifer1sorted[i]= Integer.parseInt(arraygreifer1[i]);
+        }
+        for(int i=1;i<greifer2sorted.length;i++) {
+            greifer2sorted[i]= Integer.parseInt(arraygreifer2[i]);
+        }
 
         //Sortieren
 
@@ -161,10 +219,12 @@ public class Monteur implements Stoppable
         Arrays.sort(auge2sorted);
         Arrays.sort(kettensorted);
         Arrays.sort(rumpfsorted);
-
+        Arrays.sort(antennesorted);
+        Arrays.sort(greifer1sorted);
+        Arrays.sort(greifer2sorted);
 
         String output = "Threadee-ID"+this.sekretariat.getNextThreadee()+",Mitarbeiter-ID"+this.id+",";
-        String auge1fertig, auge2fertig, arm1fertig, arm2fertig, rumpffertig, kettenantriebfertig;
+        String auge1fertig, auge2fertig, arm1fertig, arm2fertig, rumpffertig, kettenantriebfertig, antennefertig, greifer1fertig, greifer2fertig;
 
         auge1fertig = "Auge,";
         for(int i = 0; i < auge1sorted.length; i++)
@@ -202,6 +262,24 @@ public class Monteur implements Stoppable
             kettenantriebfertig += kettensorted[i];
             if(i!=(kettensorted.length-1)) kettenantriebfertig += ",";
         }
+        antennefertig = "Antenne,";
+        for(int i = 0; i < antennesorted.length; i++)
+        {
+            antennefertig += antennesorted[i];
+            if(i!=(antennesorted.length-1)) antennefertig += ",";
+        }
+        greifer1fertig = "Greifer,";
+        for(int i = 0; i < greifer1sorted.length; i++)
+        {
+            greifer1fertig += greifer1sorted[i];
+            if(i!=(greifer1sorted.length-1)) greifer1fertig += ",";
+        }
+        greifer2fertig = "Greifer,";
+        for(int i = 0; i < greifer2sorted.length; i++)
+        {
+            greifer2fertig += greifer2sorted[i];
+            if(i!=(greifer2sorted.length-1)) greifer2fertig += ",";
+        }
 
         output += auge1fertig;
         output += ",";
@@ -214,6 +292,12 @@ public class Monteur implements Stoppable
         output += rumpffertig;
         output += ",";
         output += kettenantriebfertig;
+        output += ",";
+        output += antennefertig;
+        output += ",";
+        output += greifer1fertig;
+        output += ",";
+        output += greifer2fertig;
 
         if(!this.sw.writeLine(output)) logger.log(Level.SEVERE, "Failed writing data!");
         logger.log(Level.INFO, "Neues Threadee erzeugt: '"+output+"'");
