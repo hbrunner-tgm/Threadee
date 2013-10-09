@@ -66,7 +66,7 @@ public class Lieferant implements Stoppable
 			}
 			
 			try {
-				Thread.sleep(100);
+				Thread.sleep(10);
 			} catch (InterruptedException e) {
 				logger.log(Level.WARNING, "Thread wurde im Schlaf unterbrochen!");
 			}

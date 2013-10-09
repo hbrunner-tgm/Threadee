@@ -51,7 +51,7 @@ public class Monteur implements Stoppable
 
         try
         {
-            Thread.sleep(1000);
+            Thread.sleep(20);
         }
         catch (InterruptedException e)
         {
